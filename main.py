@@ -1,0 +1,49 @@
+#!usr/bin/env python
+# -*- coding:utf-8 -*-
+# main.py
+
+from final import Game
+from  time import sleep
+import threading
+import socket
+
+sendlist = []
+recvlist = []
+host = "127.0.0.1"
+port = 8889
+
+def client():
+    s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    s.connect((host,port))
+    #s.send("Hi")
+    while True:
+        data = s.recv(4096)
+        if not data:
+            s.close()
+            break
+        print("recv:"+data)
+        #lock = threading.Lock()
+        #lock.acquire()
+        recvlist.append(data)
+        #lock.release()
+
+if __name__ == "__main__":
+    line = raw_input("what's the server ip\n")
+    host = line
+    pre = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    pre.connect((host,port))
+    data = pre.recv(4096)
+    print("recv"+data)
+    Iam = int(data)
+    data = pre.recv(4096)
+    total = int(data)
+    print("total"+data)
+    pre.close()
+
+    t = threading.Thread( target=client , name='client' )
+    t.start()
+
+    app = Game(total,Iam)
+    app.load()
+    app.run(recvlist,host,port)
+    t.join()
